@@ -292,7 +292,7 @@ int sc_main (int argc, char* argv[]){
 
 
 	}
-
+	string conex = "conexoes.txt";
 	for(int i = 0; i < SIZE_POPULATION; i++){
 		saidaDados.open(std::to_string(i)+conex);
 		for(int j = 0; j < coreNumbers; j++){
