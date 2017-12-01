@@ -191,7 +191,7 @@ int sc_main (int argc, char* argv[]){
 
 	for(int b = 0; b < 50; b++){
 		for(int a = 0; a < SIZE_POPULATION; a++){
-			//int a = 0;
+			cout << b << endl;
 		rede.conexoes_rede = gene.conexoes_rede[a];
 		//cout << gene.conexoes_rede[a].size() << endl;
 
@@ -290,8 +290,15 @@ int sc_main (int argc, char* argv[]){
 
 		gene.crossover();
 
-		cout << b << endl;
 
+	}
+
+	for(int i = 0; i < SIZE_POPULATION; i++){
+		saidaDados.open(std::to_string(i)+conex);
+		for(int j = 0; j < coreNumbers; j++){
+			saidaDados << gene.conexoes_rede[i][j].primeiro << endl;
+		}
+		saidaDados.close();
 	}
 
 }

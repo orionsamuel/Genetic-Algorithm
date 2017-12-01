@@ -15,8 +15,7 @@ public:
 	float latencia[SIZE_POPULATION];
 	string grau_latencia[SIZE_POPULATION];
 	char linha[15];
-	int pai, mae, sub1, sub2;
-	conexoes filho1, filho2;
+	int pai[5], mae[5], sub1[5], sub2[5];
 
 	/*Verifica se o valor criado para o mapeamento já se encontra nele*/
 	bool verifica(Conexoes valores[], int tam, int valor){
@@ -54,7 +53,7 @@ public:
 		Conexoes mapTeste[coreNumbers];
     	int v;
 	    int w;
-	    //srand(time(NULL));
+	    srand(time(NULL));
 		for(int i = 0; i < SIZE_POPULATION; i++){
 		   for(int j = 0; j < coreNumbers; j++){
 		      v = 1+(rand()%coreNumbers);
@@ -88,10 +87,10 @@ public:
 		int j;
 		string aux;
 		string aux2;
-		int pai, aux_dead, aux_lat;
-		int mae = 100000;
-		int sub1 = 0;
-		int sub2;
+		int pai[5], aux_dead, aux_lat;
+		int mae[5] = {100000, 100000, 100000, 100000, 100000};
+		int sub1[5] = {0, 0, 0, 0, 0};
+		int sub2[5];
 		for(int i = 0; i < SIZE_POPULATION; i++){
 			ifstream leitura;
 			leitura.open(std::to_string(i)+simulacao, ios_base::in);
@@ -129,135 +128,146 @@ public:
 		}
 
 		/*Seleciona os progenitores*/
-		for(int k = 0; k < SIZE_POPULATION; k++){
-			if((deadline[k] > deadline[k-1])){
-				pai = k;
-			}
-		}
-
-		int m = pai + 1;
-
-		for(m; m < SIZE_POPULATION; m++){
-			if((latencia[m] < latencia[m+1])){
-				aux_lat = m;
-				if(mae > aux_lat){
-					mae = aux_lat;
+		for(int c = 0; c < 5; c++){
+			for(int k = 0; k < SIZE_POPULATION; k++){
+				if((deadline[k] > deadline[k-1])){
+					pai[c] = k;
 				}
 			}
+
+			int m = pai[c] + 1;
+
+			for(m; m < SIZE_POPULATION; m++){
+				if((latencia[m] < latencia[m+1])){
+					aux_lat = m;
+					if(mae[c] > aux_lat){
+						mae[c] = aux_lat;
+					}
+				}
+			}	
 		}
 
-		for(int n = 0; n < SIZE_POPULATION; n++){
-			if((n != pai) && (n != mae) && (deadline[n+1] < deadline[sub1])){
-				sub1 = n;
+			
+
+		for(int c = 0; c < 5; c++){
+			for(int n = 0; n < SIZE_POPULATION; n++){
+				if((n != pai[c]) && (n != mae[c]) && (deadline[n+1] < deadline[sub1[c]])){
+					sub1[c] = n;
+				}
 			}
-		}
 
-		int o = sub1 + 1;
-		sub2 = sub1 + 1;
+			int o = sub1[c] + 1;
+			sub2[c] = sub1[c] + 1;
 
-		for(o; o < SIZE_POPULATION; o++){
-			if((o != pai) && (o != mae) && (o != sub1) && (latencia[o+1] > latencia[sub2])){
-				sub2 = o;
+			for(o; o < SIZE_POPULATION; o++){
+				if((o != pai[c]) && (o != mae[c]) && (o != sub1[c]) && (latencia[o+1] > latencia[sub2[c]])){
+					sub2[c] = o;
+				}
 			}
+
+
+			this->pai[c] = pai[c];
+			this->mae[c] = mae[c];
+			this->sub1[c] = sub1[c];
+			this->sub2[c] = sub2[c];
 		}
-
-
-		this->pai = pai;
-		this->mae = mae;
-		this->sub1 = sub1;
-		this->sub2 = sub2;
 	}
 
 	void crossover(){
 		srand(time(NULL));
-		Conexoes filho1[coreNumbers], filho2[coreNumbers], conexoes_aux[coreNumbers];
-		for(int i = 0; i < coreNumbers; i++){
-			conexoes_aux[i].primeiro = (rand()%2);
-			conexoes_aux[i].segundo = (rand()%2);
-		}
-
-		for(int i = 0; i < coreNumbers; i++){
-			filho1[i].primeiro = 0;
-			filho1[i].segundo = 0;
-			filho2[i].primeiro = 0;
-			filho2[i].segundo = 0;
-		}
-
-		/*Criação do primeiro filho*/
-		for(int i = 0; i < coreNumbers; i++){
-			if(conexoes_aux[i].primeiro == 1){
-				filho1[i].primeiro = conexoes_rede[pai][i].primeiro;
+		Conexoes filho1[5][coreNumbers], filho2[5][coreNumbers], conexoes_aux[5][coreNumbers];
+		
+		for(int c = 0; c < 5; c++){
+			for(int i = 0; i < coreNumbers; i++){
+				conexoes_aux[c][i].primeiro = (rand()%2);
+				conexoes_aux[c][i].segundo = (rand()%2);
 			}
-			if(conexoes_aux[i].segundo == 1){
-				filho1[i].segundo = conexoes_rede[mae][i].segundo;
+
+			for(int i = 0; i < coreNumbers; i++){
+				filho1[c][i].primeiro = 0;
+				filho1[c][i].segundo = 0;
+				filho2[c][i].primeiro = 0;
+				filho2[c][i].segundo = 0;
 			}
 		}
 
-
-		for(int i = 0; i < coreNumbers; i++){
-			if(verifica(filho1, i, conexoes_rede[mae][i].primeiro) == true){
-				break;
-			}else{
-				filho1[i].primeiro = conexoes_rede[mae][i].primeiro;
-			}
-			if(verifica2(filho1, i, conexoes_rede[pai][i].segundo) == true){
-				break;
-			}else{
-				filho1[i].segundo = conexoes_rede[pai][i].segundo;
+		/*Criação dos primeiros 5  filhos*/
+		for(int c = 0; c < 5; c++){
+			for(int i = 0; i < coreNumbers; i++){
+				if(conexoes_aux[c][i].primeiro == 1){
+					filho1[c][i].primeiro = conexoes_rede[pai[c]][i].primeiro;
+				}
+				if(conexoes_aux[c][i].segundo == 1){
+					filho1[c][i].segundo = conexoes_rede[mae[c]][i].segundo;
+				}
 			}
 
+
+			for(int i = 0; i < coreNumbers; i++){
+				if(verifica(filho1[c], i, conexoes_rede[mae[c]][i].primeiro) == true){
+					break;
+				}else{
+					filho1[c][i].primeiro = conexoes_rede[mae[c]][i].primeiro;
+				}
+				if(verifica2(filho1[c], i, conexoes_rede[pai[c]][i].segundo) == true){
+					break;
+				}else{
+					filho1[c][i].segundo = conexoes_rede[pai[c]][i].segundo;
+				}
+
+			}	
 		}
 
+		
 
-		/*Criação do segundo filho*/
-		for(int i = 0; i < coreNumbers; i++){
-			if(conexoes_aux[i].primeiro == 0){
-				filho2[i].primeiro = conexoes_rede[mae][i].primeiro;
+
+		/*Criação dos ultimos 5 filhos*/
+		for(int c = 0; c < 5; c++){
+			for(int i = 0; i < coreNumbers; i++){
+				if(conexoes_aux[c][i].primeiro == 0){
+					filho2[c][i].primeiro = conexoes_rede[mae[c]][i].primeiro;
+				}
+				if(conexoes_aux[c][i].segundo == 0){
+					filho2[c][i].segundo = conexoes_rede[pai[c]][i].segundo;
+				}
 			}
-			if(conexoes_aux[i].segundo == 0){
-				filho2[i].segundo = conexoes_rede[pai][i].segundo;
-			}
+
+
+			for(int i = 0; i < coreNumbers; i++){
+				if(verifica(filho2[c], i, conexoes_rede[pai[c]][i].primeiro) == true){
+					break;
+				}else{
+					filho2[c][i].primeiro = conexoes_rede[pai[c]][i].primeiro;
+				}
+
+				if(verifica2(filho2[c], i,conexoes_rede[mae[c]][i].segundo) == true){
+					break;
+				}else{
+					filho2[c][i].segundo = conexoes_rede[mae[c]][i].segundo;
+				}
+			}	
 		}
-
-
-		for(int i = 0; i < coreNumbers; i++){
-			if(verifica(filho2, i, conexoes_rede[pai][i].primeiro) == true){
-				break;
-			}else{
-				filho2[i].primeiro = conexoes_rede[pai][i].primeiro;
-			}
-
-			if(verifica2(filho2, i,conexoes_rede[mae][i].segundo) == true){
-				break;
-			}else{
-				filho2[i].segundo = conexoes_rede[mae][i].segundo;
-			}
-		}
+		
 
 
 		/*Mutação*/
 		int aux_mut;
-		aux_mut = filho1[(coreNumbers-1)].primeiro;
-		filho1[(coreNumbers-1)].primeiro = filho1[0].primeiro;
-		filho1[0].primeiro = aux_mut;
+		for(int c = 0; c < 5; c++){
+			aux_mut = filho1[c][(coreNumbers-1)].primeiro;
+			filho1[c][(coreNumbers-1)].primeiro = filho1[c][0].primeiro;
+			filho1[c][0].primeiro = aux_mut;
+		}
+		
 
-		aux_mut = filho2[(coreNumbers-1)].primeiro;
-		filho2[(coreNumbers-1)].primeiro = filho2[0].primeiro;
-		filho2[0].primeiro = aux_mut;
 
 
 		/*Troca os filhos pelos indíviduos mais fracos da população*/
-		/*for(int i = 0; i < coreNumbers; i++){
-			cout << filho2[i].primeiro << " " << filho2[i].segundo << endl;
-			this->filho1.push_back({filho1[i].primeiro, filho1[i].segundo});
-			this->filho2.push_back({filho2[i].primeiro, filho2[i].segundo});
-		}*/
-		for(int i = 0; i < coreNumbers; i++){
-			conexoes_rede[sub1][i] = filho1[i];
-			conexoes_rede[sub2][i] = filho2[i];
+		for(int c = 0; c < 5; c++){
+			for(int i = 0; i < coreNumbers; i++){
+				conexoes_rede[sub1[c]][i] = filho1[c][i];
+				conexoes_rede[sub2[c]][i] = filho2[c][i];
+			}	
 		}
-
-
 	}
 
 	genetico(){
